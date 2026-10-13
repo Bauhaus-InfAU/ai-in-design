@@ -1,6 +1,6 @@
 # Sources
 
-The city kit: central Weimar, about 1278 × 1983 m, west of and including the Markt. Generated on 2026-10-13 by `scripts/kit/weimar_lab.py` from data prepared for an earlier course. Don't edit these files by hand; run the script again.
+The city kit: central Weimar, about 1278 × 1983 m, west of and including the Markt. Generated on 2026-10-13 from data prepared for an earlier course; the scripts are on the `city-kit` branch of Bauhaus-InfAU/ai-in-design. Don't edit these files by hand.
 
 Bounding box, west, south, east, north: 11.315255, 50.973934, 11.334340, 50.991391. All coordinates are WGS84 longitude and latitude, longitude first.
 

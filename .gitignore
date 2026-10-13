@@ -7,12 +7,3 @@ dist
 .env
 .env.*
 !.env.example
-
-# data that must never be published
-private/*
-!private/README.md
-
-# the kit generator's downloads
-scripts/kit/.cache/
-__pycache__/
-.venv/
