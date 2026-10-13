@@ -32,13 +32,13 @@ The start page says "Nothing here yet" and names the city kit. If it says the ki
 | `prompt.md` | the starter prompt: a map of how far you can walk in the city, and who lives there |
 | `public/data/` | the city kit; `SOURCES.md` there lists every file, its source, licence and fields |
 | `src/` | the app; for now only a start page |
-| `scripts/kit/` | the generator that made the city kit |
+| `scripts/kit/` | the scripts that make the city kit: `weimar_lab.py` for Weimar, `build.py` for any other place |
 | `private/` | for data that must never be published; git ignores it |
 | `.github/workflows/` | builds the app and publishes it to GitHub Pages on every push to `main` |
 
 ## The city kit
 
-A 2 × 2 km square of central Weimar: building footprints with heights where known, the street network with lengths in metres, and the 2022 census on a 100 m grid. Read `public/data/SOURCES.md` before you use it.
+Central Weimar, about 1.3 × 2 km: buildings with measured heights and their uses, plots with their land use, a pedestrian network you can route on, and the 2022 census on a 100 m grid. Read `public/data/SOURCES.md` before you use it.
 
 To make a kit for another place, install [uv](https://docs.astral.sh/uv/) and run:
 
@@ -46,8 +46,8 @@ To make a kit for another place, install [uv](https://docs.astral.sh/uv/) and ru
 uv run scripts/kit/build.py --place "Erfurt" --size 2000
 ```
 
-It replaces the files in `public/data/`. Buildings and streets come from Overture Maps and work anywhere. The census grid covers Germany only.
+It replaces the files in `public/data/`. Its buildings and streets come from Overture Maps and work anywhere, with fewer fields than the Weimar kit. The census grid covers Germany only.
 
 ## Data and credit
 
-Buildings and streets: Overture Maps Foundation, © OpenStreetMap contributors, Microsoft (ODbL). Census grid: Zensus 2022, © Statistische Ämter des Bundes und der Länder (dl-de/by-2-0). Any page that shows the data carries this line.
+Buildings: 3D building models LoD2 © GDI-Th (dl-de/by-2-0). Land use and pedestrian network: Egor Gaydukov, InfAU, Bauhaus-Universität Weimar. Census grid: Zensus 2022, © Statistische Ämter des Bundes und der Länder (dl-de/by-2-0). Any page that shows the data carries this line.

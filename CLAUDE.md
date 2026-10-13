@@ -35,7 +35,9 @@ No backend. Calls to paid services, such as an image API, run from a script on t
 
 ## Data
 
-The city kit is in `public/data/`. A generator in `scripts/kit/` made it from open data: buildings and streets from Overture Maps, which builds on OpenStreetMap, and the census grid from Zensus 2022. Don't edit these files by hand. To rebuild the kit for another area, the student runs `uv run scripts/kit/build.py --place "<place>" --size 2000`; the default example is `--place "Weimar"`. The census grid only covers Germany.
+The city kit is in `public/data/`: central Weimar, with buildings from the official 3D building models of Thuringia, land use and a pedestrian network prepared by the course staff, and the census grid from Zensus 2022. `scripts/kit/weimar_lab.py` made it. Don't edit these files by hand.
+
+For another place, the student runs `uv run scripts/kit/build.py --place "<place>" --size 2000`. That kit comes from Overture Maps instead and has fewer fields: no plots, no uses, heights missing on many buildings, and a street network without lines across squares. Its `SOURCES.md` says so. The census grid only covers Germany.
 
 `SOURCES.md` lists every file with its source, date, licence and fields. Read it before you use any data. Check the exact field names in the files themselves.
 
@@ -43,10 +45,11 @@ All coordinates are WGS84 longitude and latitude, longitude first, as GeoJSON re
 
 | File | What it is | Units and traps |
 | --- | --- | --- |
-| `kit.json` | the kit area: `center`, `bbox`, `size_m` | `center` is `[lon, lat]`, `bbox` is `[west, south, east, north]` |
-| `buildings.geojson` | building footprints | `height` in metres, missing on about half the buildings; `height_source` says where each height comes from: `osm` (mapped), `floors` (floors × 3 m), `ml` (estimated from aerial images), or `null` |
-| `streets.geojson` | street centre lines, for drawing | a line drawing, not a network |
-| `streets.graph.json` | the street network: `nodes` with `id`, `lon`, `lat`; `edges` with `from`, `to`, `length`, `walkable`, `coords` | edge `length` in metres along the street; edges run both ways; `coords` is the line from `from` to `to`. Distances along streets come from here, never from straight lines |
+| `kit.json` | the kit area: `center`, `bbox`, `size_m` | `center` is `[lon, lat]`, `bbox` is `[west, south, east, north]`, `size_m` is `[width, height]` |
+| `buildings.geojson` | building footprints | `height` in metres; `floors`; `use`, the main use; `floor_area_m2`, floor area per use in m². Floor areas are estimates. `undefined` is a use that isn't known, not an empty building |
+| `plots.geojson` | plots with their `landuse` | a plot is land, not a building; several buildings can stand on one plot |
+| `streets.geojson` | the pedestrian network, for drawing | a line drawing, not a network |
+| `streets.graph.json` | the pedestrian network: `nodes` with `id`, `lon`, `lat`; `edges` with `from`, `to`, `length`, `walkable`, `coords` | edge `length` in metres; edges run both ways; it crosses squares. Distances along streets come from here, never from straight lines |
 | `zensus.geojson` | census grid, 100 m cells touching the kit | `population` in persons, `avg_age` in years, `rent_eur_m2` in € per m² per month, `vacancy_pct` in percent, `heating_main`. A cell is an area, not a building. `null` means no published figure, which isn't zero. `uncertain` lists values the census marks as unreliable |
 
 Other data may be added later. Each new file gets its entry in `SOURCES.md`.

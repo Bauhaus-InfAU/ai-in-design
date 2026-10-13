@@ -22,7 +22,7 @@ export default function App() {
       {error && <p className="error">The city kit didn't load ({error}).</p>}
       {kit && (
         <p>
-          The city kit is ready: {kit.label}, {kit.size_m} × {kit.size_m} m, generated on {kit.generated}.
+          The city kit is ready: {kit.label}, {kit.size_m[0]} × {kit.size_m[1]} m, generated on {kit.generated}.
           The data is in <code>public/data/</code>. Ask your agent to build something with it.
         </p>
       )}

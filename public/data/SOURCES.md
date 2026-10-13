@@ -1,13 +1,14 @@
 # Sources
 
-The city kit: Weimar, a square of 2000 × 2000 m around 50.97933 N, 11.32979 E. Generated on 2026-10-13 by `scripts/kit/build.py`. Don't edit these files by hand; run the generator again.
+The city kit: central Weimar, about 1278 × 1983 m, west of and including the Markt. Generated on 2026-10-13 by `scripts/kit/weimar_lab.py` from data prepared for an earlier course. Don't edit these files by hand; run the script again.
 
-Bounding box, west, south, east, north: 11.315550, 50.970340, 11.344034, 50.988318. All coordinates are WGS84 longitude and latitude, longitude first.
+Bounding box, west, south, east, north: 11.315255, 50.973934, 11.334340, 50.991391. All coordinates are WGS84 longitude and latitude, longitude first.
 
 | File | Source | Licence |
 | --- | --- | --- |
-| `buildings.geojson` | Overture Maps, release 2026-09-23.1 | ODbL |
-| `streets.geojson`, `streets.graph.json` | Overture Maps, release 2026-09-23.1 | ODbL |
+| `buildings.geojson` | footprints and heights: 3D building models LoD2 of Thuringia; uses: Egor Gaydukov | dl-de/by-2-0 |
+| `plots.geojson` | land use per plot: Egor Gaydukov | |
+| `streets.geojson`, `streets.graph.json` | pedestrian network: Egor Gaydukov | |
 | `zensus.geojson` | Zensus 2022, 100 m grid | dl-de/by-2-0 |
 | `kit.json` | the generator | |
 
@@ -15,48 +16,60 @@ Bounding box, west, south, east, north: 11.315550, 50.970340, 11.344034, 50.9883
 
 Put this line on every map or page that uses the kit:
 
-> Buildings and streets: Overture Maps Foundation, © OpenStreetMap contributors, Microsoft (ODbL). Census grid: Zensus 2022, © Statistische Ämter des Bundes und der Länder (dl-de/by-2-0).
+> Buildings: 3D building models LoD2 © GDI-Th (dl-de/by-2-0). Land use and pedestrian network: Egor Gaydukov, InfAU, Bauhaus-Universität Weimar. Census grid: Zensus 2022, © Statistische Ämter des Bundes und der Länder (dl-de/by-2-0).
 
 ## `buildings.geojson`
 
-Building footprints from Overture Maps (https://overturemaps.org), release 2026-09-23.1, theme `buildings`. Overture combines OpenStreetMap with other sources; the sources in this area are: Microsoft ML Buildings, OpenStreetMap. Licence: Open Database License (ODbL), https://opendatacommons.org/licenses/odbl/. A building is in the kit when a point inside its footprint lies in the kit area. Underground buildings are left out.
+Footprints and heights from the 3D building models in level of detail 2 (LoD2) of the Thüringer Landesamt für Bodenmanagement und Geoinformation, tiles 32_662_5648 and 32_662_5650, surveyed 14 October 2024. Licence: Datenlizenz Deutschland, Namensnennung, Version 2.0 (dl-de/by-2-0), © GDI-Th. Floors and floor area by use were added by Egor Gaydukov.
 
-4928 buildings.
+4316 buildings. Every building has a height.
 
 | Field | Meaning | Unit |
 | --- | --- | --- |
-| `id` | Overture id | |
-| `class` | building type, such as `apartments`, `house` or `church`; `null` when unknown | |
-| `name` | name, where there is one | |
+| `id` | building id | |
+| `height` | height of the building, from the ground to the highest point of the roof | metres |
+| `height_source` | always `lod2`: measured in the 3D building model | |
 | `floors` | floors above ground | floors |
-| `height` | height of the building | metres |
-| `height_source` | where `height` comes from | |
+| `use` | the use with the largest floor area in the building | |
+| `floor_area_m2` | floor area per use, only uses above zero | m² |
 
-`height_source` is one of:
+The uses are `residential`, `service`, `undefined`, `education`, `civic`, `entertainment`, `retail`, `food_and_drink`, `office`, `health`, `accommodation`, `culture`, `sport`, `transport`, `light_industrial`. `undefined` is floor area whose use is not known. Floor areas are estimates for the whole building, not surveyed per floor.
 
-- `osm`: the height mapped in OpenStreetMap. 6 buildings.
-- `floors`: the source gives the number of floors but no mapped height. The height is floors × 3 m, an estimate. 1871 buildings.
-- `ml`: a height that Microsoft estimated from aerial images with machine learning, not measured. 600 buildings.
-- `null`: no height and no floors. `height` is `null` too. 2451 buildings. Don't guess these; use a stated default and mark them.
+## `plots.geojson`
+
+Plots with their land use, prepared by Egor Gaydukov. 2764 plots.
+
+| `landuse` | Plots |
+| --- | --- |
+| `residential` | 2180 |
+| `mixed use` | 218 |
+| `special functions` | 169 |
+| `industrial and commercial` | 85 |
+| `recreation` | 57 |
+| `square` | 33 |
+| `flowing water` | 16 |
+| `wasteland` | 3 |
+| `cemetery` | 2 |
+| `standing water` | 1 |
 
 ## `streets.geojson` and `streets.graph.json`
 
-Streets and paths from Overture Maps, release 2026-09-23.1, theme `transportation`, built from OpenStreetMap (ODbL, as above). Every road and path: roads, footways, paths, steps. Railways are left out.
+A pedestrian network drawn by Egor Gaydukov for a walking simulation. It follows streets, paths and squares, and crosses squares where people walk across them. Every edge is walkable.
 
-`streets.geojson` is the drawing: one line per street segment, with `class`, `name` and `walkable`.
+`streets.geojson` is the drawing: one straight line per edge, with `length` and `walkable`.
 
 `streets.graph.json` is the network, for routing:
 
 - `nodes`: `id`, `lon`, `lat`. A node is a junction or a dead end.
-- `edges`: `id`, `from` and `to` (node ids), `length` in metres along the street, `walkable`, `class`, `name`, and `coords`, the line from `from` to `to`.
+- `edges`: `id`, `from` and `to` (node ids), `length` in metres, `walkable`, and `coords`, the line from `from` to `to`.
 
-Edges have no direction; you can walk them both ways. `walkable` is false for motorways and trunk roads and for ways closed to people on foot. Edges that cross the edge of the kit are kept whole, so some lines end a little outside it. 4160 of 4176 edges are walkable, 3286 nodes, 137.7 km of streets and paths in total.
+Edges have no direction; you can walk them both ways. 962 nodes, 1186 edges, 46.4 km in total, all in one connected network.
 
 ## `zensus.geojson`
 
 The Zensus 2022 census on a 100 m grid, reference date 15 May 2022. Source: Statistische Ämter des Bundes und der Länder, https://www.zensus2022.de, files from https://www.zensus2022.de/DE/Ergebnisse-des-Zensus/gitterzellen.html. Licence: Datenlizenz Deutschland, Namensnennung, Version 2.0 (dl-de/by-2-0, https://www.govdata.de/dl-de/by-2-0).
 
-351 cells, kept whole wherever a cell touches the kit area. Each cell is a 100 m square in the European grid (EPSG:3035), stored here as a polygon in longitude and latitude.
+245 cells, kept whole wherever a cell touches the kit area. Each cell is a 100 m square in the European grid (EPSG:3035), stored here as a polygon in longitude and latitude.
 
 | Field | Meaning | Unit |
 | --- | --- | --- |
@@ -76,8 +89,8 @@ How to read it:
 - The census protects privacy by changing small counts slightly at random (the cell-key method). Single cells are therefore approximate, and cell values don't add up exactly to official totals.
 - In the source tables, "–" means exactly zero or set to zero. The kit stores it as `0`.
 
-349 of the 351 cells have a resident count, 24693 residents in total. 294 cells have a rent figure.
+244 of the 245 cells have a resident count, 21781 residents in total. 227 cells have a rent figure.
 
 ## `kit.json`
 
-The kit area: `label`, `center` as `[lon, lat]`, `bbox` as `[west, south, east, north]`, `size_m`, `overture_release` and `generated`.
+The kit area: `label`, `center` as `[lon, lat]`, `bbox` as `[west, south, east, north]`, `size_m` as `[width, height]`, and `generated`.

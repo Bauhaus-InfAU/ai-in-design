@@ -488,7 +488,7 @@ Edges have no direction; you can walk them both ways. `walkable` is false for mo
 {census_block}
 ## `kit.json`
 
-The kit area: `label`, `center` as `[lon, lat]`, `bbox` as `[west, south, east, north]`, `size_m`, `overture_release` and `generated`.
+The kit area: `label`, `center` as `[lon, lat]`, `bbox` as `[west, south, east, north]`, `size_m` as `[width, height]`, `overture_release` and `generated`.
 """
     (out / "SOURCES.md").write_text(text, encoding="utf-8")
     log(f"  wrote {(out / 'SOURCES.md').relative_to(ROOT)}")
@@ -529,7 +529,7 @@ def main():
         "label": label,
         "center": [r6(center[1]), r6(center[0])],
         "bbox": [r6(v) for v in bbox],
-        "size_m": args.size,
+        "size_m": [args.size, args.size],
         "overture_release": release,
         "generated": today,
     })
