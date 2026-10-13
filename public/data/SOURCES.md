@@ -37,15 +37,15 @@ The uses are `residential`, `service`, `undefined`, `education`, `civic`, `enter
 
 ## `plots.geojson`
 
-Plots with their land use, prepared by Egor Gaydukov. 2764 plots.
+Plots with their land use, prepared by Egor Gaydukov. 2750 plots.
 
 | `landuse` | Plots |
 | --- | --- |
-| `residential` | 2180 |
-| `mixed use` | 218 |
+| `residential` | 2171 |
+| `mixed use` | 216 |
 | `special functions` | 169 |
-| `industrial and commercial` | 85 |
-| `recreation` | 57 |
+| `industrial and commercial` | 83 |
+| `recreation` | 56 |
 | `square` | 33 |
 | `flowing water` | 16 |
 | `wasteland` | 3 |
