@@ -28,7 +28,8 @@ import sys
 from pathlib import Path
 
 from pyproj import Transformer
-from shapely.geometry import shape
+import shapely
+from shapely.geometry import mapping, shape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build import ROOT, build_census, log, r6, write_json  # noqa: E402
@@ -70,6 +71,8 @@ PLOT_USES = {
     "Cemetery": "cemetery",
 }
 
+MIN_AREA_M2 = 1  # smaller plots are slivers left over from drawing
+
 to_wgs = Transformer.from_crs("EPSG:25832", "EPSG:4326", always_xy=True).transform
 
 
@@ -79,6 +82,24 @@ def place(coords):
         lon, lat = to_wgs(coords[0] * DEGREE + ORIGIN[0], coords[1] * DEGREE + ORIGIN[1])
         return [r6(lon), r6(lat)]
     return [place(c) for c in coords]
+
+
+def outline(geometry):
+    """The Rhino export gives each footprint as a pile of mesh triangles. Merge
+    them into one outline in metres, snapped to 1 cm, and return it as [lon, lat]
+    GeoJSON, or None if nothing is left."""
+    g = shapely.transform(shape(geometry), lambda xy: xy * DEGREE + ORIGIN)
+    g = shapely.simplify(shapely.unary_union(shapely.set_precision(g, 0.01)).buffer(0), 0.02)
+    if g.is_empty or g.area < MIN_AREA_M2:
+        return None
+    g = shapely.transform(g, lambda x, y: to_wgs(x, y), interleaved=False)
+    return round_coords(mapping(g))
+
+
+def round_coords(geojson):
+    def walk(c):
+        return [r6(c[0]), r6(c[1])] if isinstance(c[0], (int, float)) else [walk(x) for x in c]
+    return {"type": geojson["type"], "coordinates": walk(geojson["coordinates"])}
 
 
 def read(source, name):
@@ -97,6 +118,9 @@ def build_buildings(source, out):
             bid = f"{bid}-{seen[bid]}"
         areas = {USES[k]: round(float(v), 1) for k, v in p.items() if k in USES and float(v) > 0}
         main = max(areas, key=areas.get) if areas else None
+        geometry = outline(f["geometry"])
+        if geometry is None:
+            continue
         for k, v in areas.items():
             uses_total[k] = uses_total.get(k, 0) + v
         features.append({
@@ -110,7 +134,7 @@ def build_buildings(source, out):
                 "use": main,
                 "floor_area_m2": areas,
             },
-            "geometry": {"type": f["geometry"]["type"], "coordinates": place(f["geometry"]["coordinates"])},
+            "geometry": geometry,
         })
     write_json(out / "buildings.geojson", {"type": "FeatureCollection", "features": features})
     return {"count": len(features), "uses": {k: round(v) for k, v in sorted(uses_total.items(), key=lambda kv: -kv[1])}}
@@ -119,14 +143,18 @@ def build_buildings(source, out):
 def build_plots(source, out):
     features = []
     counts = {}
-    for i, f in enumerate(read(source, "weimar-plots.geojson")):
+    for f in read(source, "weimar-plots.geojson"):
+        geometry = outline(f["geometry"])
+        if geometry is None:
+            continue
+        i = len(features)
         use = PLOT_USES.get(f["properties"]["landuse"], f["properties"]["landuse"])
         counts[use] = counts.get(use, 0) + 1
         features.append({
             "type": "Feature",
             "id": i,
             "properties": {"id": i, "landuse": use},
-            "geometry": {"type": f["geometry"]["type"], "coordinates": place(f["geometry"]["coordinates"])},
+            "geometry": geometry,
         })
     write_json(out / "plots.geojson", {"type": "FeatureCollection", "features": features})
     return {"count": len(features), "landuse": dict(sorted(counts.items(), key=lambda kv: -kv[1]))}
